@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# HuggingFace & Models
+.cache/
+models/
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
