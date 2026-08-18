@@ -1,4 +1,5 @@
-from typing import List
+import os
+from typing import List, Tuple
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./skillgap.db"
 
-    # Adzuna API
+    # Adzuna API (reads from .env in current directory or parent directory)
     ADZUNA_APP_ID: str = ""
     ADZUNA_APP_KEY: str = ""
     ADZUNA_COUNTRY: str = "gb"
@@ -31,7 +32,8 @@ class Settings(BaseSettings):
     ]
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # Check both local .env and parent .env automatically
+        env_file=(".env", "../.env", "../../.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )

@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.database.session import init_db
 from app.api.health import router as health_router
+from app.api.jobs import router as jobs_router
+from app.api.jd import router as jd_router
+from app.api.candidates import router as candidates_router
+from app.api.match import router as match_router
 
 
 @asynccontextmanager
@@ -17,7 +21,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.1.0",
+    version="0.5.0",
     description="Backend API for AI-Based Skill Gap & Employment Recommendation System",
     lifespan=lifespan
 )
@@ -33,6 +37,10 @@ app.add_middleware(
 
 # Register API Routers
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
+app.include_router(jobs_router, prefix=settings.API_V1_PREFIX)
+app.include_router(jd_router, prefix=settings.API_V1_PREFIX)
+app.include_router(candidates_router, prefix=settings.API_V1_PREFIX)
+app.include_router(match_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
@@ -40,7 +48,8 @@ def root():
     return {
         "message": f"Welcome to {settings.APP_NAME} API",
         "docs_url": "/docs",
-        "health_check": f"{settings.API_V1_PREFIX}/health"
+        "health_check": f"{settings.API_V1_PREFIX}/health",
+        "match_engine": f"{settings.API_V1_PREFIX}/match/evaluate-job"
     }
 
 
