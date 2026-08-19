@@ -8,11 +8,11 @@ from app.api.jobs import router as jobs_router
 from app.api.jd import router as jd_router
 from app.api.candidates import router as candidates_router
 from app.api.match import router as match_router
+from app.api.recommendations import router as recommendations_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan context manager for database table initialization on startup."""
     print("Initializing database tables...")
     init_db()
     print("Database initialization complete.")
@@ -21,12 +21,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.5.0",
+    version="0.6.0",
     description="Backend API for AI-Based Skill Gap & Employment Recommendation System",
     lifespan=lifespan
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -35,12 +34,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register API Routers
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
 app.include_router(jobs_router, prefix=settings.API_V1_PREFIX)
 app.include_router(jd_router, prefix=settings.API_V1_PREFIX)
 app.include_router(candidates_router, prefix=settings.API_V1_PREFIX)
 app.include_router(match_router, prefix=settings.API_V1_PREFIX)
+app.include_router(recommendations_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
@@ -49,7 +48,8 @@ def root():
         "message": f"Welcome to {settings.APP_NAME} API",
         "docs_url": "/docs",
         "health_check": f"{settings.API_V1_PREFIX}/health",
-        "match_engine": f"{settings.API_V1_PREFIX}/match/evaluate-job"
+        "match_engine": f"{settings.API_V1_PREFIX}/match/evaluate-job",
+        "recommendations": f"{settings.API_V1_PREFIX}/recommendations/dashboard/{{candidate_id}}"
     }
 
 
