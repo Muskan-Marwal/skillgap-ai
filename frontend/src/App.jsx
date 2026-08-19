@@ -8,6 +8,8 @@ import { ResumeUploader } from './components/ResumeUploader';
 import { CandidateProfileView } from './components/CandidateProfileView';
 import { MatchBreakdownModal } from './components/MatchBreakdownModal';
 import { RecommendationsDashboard } from './components/RecommendationsDashboard';
+import { SkillGapView } from './components/SkillGapView';
+import { WhatIfSimulator } from './components/WhatIfSimulator';
 import {
   checkHealth,
   getSystemInfo,
@@ -41,6 +43,8 @@ import {
   CheckCircle2,
   Zap,
   Clock,
+  Target,
+  Beaker,
 } from 'lucide-react';
 
 const phases = [
@@ -50,14 +54,13 @@ const phases = [
   { id: 4, title: 'Candidate Intelligence', status: 'completed', desc: 'PyMuPDF resume parser + project/experience evidence extractor' },
   { id: 5, title: 'Semantic Matching', status: 'completed', desc: 'all-MiniLM-L6-v2 embeddings + weighted fit scoring' },
   { id: 6, title: 'Tiered Recommendations', status: 'completed', desc: 'Apply Now / Almost Ready / Future Target tri-tier dashboard' },
-  { id: 7, title: 'Explainability & Gaps', status: 'planned', desc: 'Matched evidence provenance & missing skill priority breakdown' },
-  { id: 8, title: 'Personalized Roadmap', status: 'planned', desc: 'Curated free learning resources + prerequisite graph' },
-  { id: 9, title: 'What-If Simulation', status: 'planned', desc: 'Virtual candidate skill additions & real-time recalculation' },
-  { id: 10, title: 'Final Demo Integration', status: 'planned', desc: '5-minute seamless SIH/Hackathon presentation flow' },
+  { id: 7, title: 'Skill Gap Analysis', status: 'completed', desc: 'Cross-job gap analysis, evidence provenance & priority matrix' },
+  { id: 8, title: 'Personalized Roadmap', status: 'completed', desc: 'Curated free learning resources + weekly learning plan' },
+  { id: 9, title: 'What-If Simulation', status: 'completed', desc: 'Virtual skill additions & real-time score recalculation' },
+  { id: 10, title: 'Final Integration', status: 'completed', desc: 'End-to-end workflow, testing, and hackathon polish' },
 ];
 
 export function App() {
-  // active tab: 'recommendations' | 'jobs' | 'candidate' | 'esco' | 'system'
   const [activeTab, setActiveTab] = useState('recommendations');
 
   const [healthData, setHealthData] = useState(null);
@@ -79,8 +82,6 @@ export function App() {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [lastSearchQuery, setLastSearchQuery] = useState('Data Scientist');
-
-  // ── Data fetching helpers ────────────────────────────────────────────────
 
   const fetchSystemData = async () => {
     setLoading(true);
@@ -222,7 +223,6 @@ export function App() {
     handleSearch({ query: 'Data Scientist', location: 'London', country: 'gb', use_cache_only: false, results_per_page: 15, page: 1 });
   }, []);
 
-  // Auto-build recommendations once candidate + jobs are ready
   useEffect(() => {
     if (currentCandidate && jobsData?.jobs?.length && !recommendationsData) {
       handleBuildRecommendations();
@@ -235,7 +235,13 @@ export function App() {
     (s) => selectedCategory === 'All' || s.category === selectedCategory
   ) || [];
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  const allEvaluatedJobs = recommendationsData
+    ? [
+        ...(recommendationsData.apply_now?.jobs || []),
+        ...(recommendationsData.almost_ready?.jobs || []),
+        ...(recommendationsData.future_target?.jobs || []),
+      ]
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -246,11 +252,13 @@ export function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <nav className="flex space-x-1.5 py-2 flex-wrap gap-y-1">
             {[
-              { id: 'recommendations', label: '🎯 Recommendations', icon: LayoutDashboard },
-              { id: 'jobs', label: '🔍 Job Discovery', icon: FileSearch },
-              { id: 'candidate', label: '📄 Candidate Profile', icon: UserCheck },
-              { id: 'esco', label: '📚 ESCO Taxonomy', icon: BookOpen },
-              { id: 'system', label: '⚙️ System', icon: Cpu },
+              { id: 'recommendations', label: 'Recommendations', icon: LayoutDashboard },
+              { id: 'jobs', label: 'Job Discovery', icon: FileSearch },
+              { id: 'skillgap', label: 'Skill Gap & Roadmap', icon: Target },
+              { id: 'whatif', label: 'What-If', icon: Beaker },
+              { id: 'candidate', label: 'Candidate', icon: UserCheck },
+              { id: 'esco', label: 'ESCO Taxonomy', icon: BookOpen },
+              { id: 'system', label: 'System', icon: Cpu },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -413,6 +421,70 @@ export function App() {
           </div>
         )}
 
+        {/* ── TAB: SKILL GAP & ROADMAP ─────────────────────────────────── */}
+        {activeTab === 'skillgap' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <Target className="w-6 h-6 text-sky-400" />
+                Skill Gap Analysis & Personalized Learning Roadmap
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Cross-job gap analytics with priority-ordered free learning resources.
+              </p>
+            </div>
+
+            {!currentCandidate ? (
+              <div className="p-16 text-center text-slate-500 text-sm bg-slate-900/40 rounded-2xl border border-slate-800 space-y-3">
+                <Target className="w-10 h-10 text-slate-600 mx-auto" />
+                <p>Upload a resume or select a candidate first.</p>
+                <button
+                  onClick={() => setActiveTab('candidate')}
+                  className="mx-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-500 transition"
+                >
+                  <UserCheck className="w-4 h-4" /> Go to Candidate Profile
+                </button>
+              </div>
+            ) : (
+              <SkillGapView candidateId={currentCandidate.id} candidateName={currentCandidate.name} />
+            )}
+          </div>
+        )}
+
+        {/* ── TAB: WHAT-IF SIMULATION ─────────────────────────────────── */}
+        {activeTab === 'whatif' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <Beaker className="w-6 h-6 text-purple-400" />
+                What-If Skill Simulation
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Simulate adding skills to your profile and see real-time score recalculation using the same matching engine.
+              </p>
+            </div>
+
+            {!currentCandidate ? (
+              <div className="p-16 text-center text-slate-500 text-sm bg-slate-900/40 rounded-2xl border border-slate-800 space-y-3">
+                <Beaker className="w-10 h-10 text-slate-600 mx-auto" />
+                <p>Upload a resume or select a candidate first.</p>
+                <button
+                  onClick={() => setActiveTab('candidate')}
+                  className="mx-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-500 transition"
+                >
+                  <UserCheck className="w-4 h-4" /> Go to Candidate Profile
+                </button>
+              </div>
+            ) : (
+              <WhatIfSimulator
+                candidateId={currentCandidate.id}
+                candidateName={currentCandidate.name}
+                jobs={allEvaluatedJobs}
+              />
+            )}
+          </div>
+        )}
+
         {/* ── TAB: CANDIDATE INTELLIGENCE ─────────────────────────────────── */}
         {activeTab === 'candidate' && (
           <div className="space-y-8">
@@ -494,9 +566,9 @@ export function App() {
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { label: 'API Server', value: isConnected ? 'FastAPI 0.6.0' : 'Disconnected', sub: 'MiniLM Matcher + Recommender', icon: Cpu, status: isConnected ? 'completed' : 'in-progress', badgeLabel: isConnected ? 'Healthy & Online' : 'Waiting' },
+                { label: 'API Server', value: isConnected ? 'FastAPI 1.0.0' : 'Disconnected', sub: 'MiniLM Matcher + Recommender + What-If', icon: Cpu, status: isConnected ? 'completed' : 'in-progress', badgeLabel: isConnected ? 'Healthy & Online' : 'Waiting' },
                 { label: 'SQLite Database', value: `${recentCandidates?.length || 0} Candidates`, sub: 'skillgap.db — Jobs, Candidates, Matches', icon: Database, status: isDbOk ? 'completed' : 'in-progress', badgeLabel: isDbOk ? 'Connected' : 'Offline' },
-                { label: 'Scoring Weights', value: 'Req 60% • Pref 25%', sub: 'Bonus 10% • Experience 5%', icon: Sliders, status: 'completed', badgeLabel: 'Evidence Hierarchy Active' },
+                { label: 'Scoring Weights', value: 'Req 60% + Pref 25%', sub: 'Bonus 10% + Experience 5%', icon: Sliders, status: 'completed', badgeLabel: 'Evidence Hierarchy Active' },
               ].map(({ label, value, sub, icon: Icon, status, badgeLabel }) => (
                 <div key={label} className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
@@ -510,15 +582,14 @@ export function App() {
               ))}
             </div>
 
-            {/* Roadmap */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-white">2-Day Hackathon / SIH Roadmap</h3>
-                  <p className="text-xs text-slate-400">Phase execution tracker</p>
+                  <h3 className="text-lg font-bold text-white">Hackathon Phase Roadmap</h3>
+                  <p className="text-xs text-slate-400">All 10 phases complete</p>
                 </div>
-                <span className="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                  Phase 6 of 10 Complete
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                  10 of 10 Complete
                 </span>
               </div>
 
@@ -526,11 +597,7 @@ export function App() {
                 {phases.map((phase) => (
                   <div
                     key={phase.id}
-                    className={`p-4 rounded-xl border flex items-start justify-between gap-4 ${
-                      phase.id <= 6
-                        ? 'bg-slate-900/90 border-emerald-500/30'
-                        : 'bg-slate-900/40 border-slate-800/80 opacity-70'
-                    }`}
+                    className="p-4 rounded-xl border flex items-start justify-between gap-4 bg-slate-900/90 border-emerald-500/30"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -541,10 +608,7 @@ export function App() {
                       </div>
                       <p className="text-xs text-slate-400">{phase.desc}</p>
                     </div>
-                    <StatusBadge
-                      status={phase.id <= 6 ? 'completed' : 'planned'}
-                      label={phase.id <= 6 ? 'Done' : 'Planned'}
-                    />
+                    <StatusBadge status="completed" label="Done" />
                   </div>
                 ))}
               </div>
@@ -558,7 +622,7 @@ export function App() {
       {selectedMatch && <MatchBreakdownModal matchResult={selectedMatch} onClose={() => setSelectedMatch(null)} />}
 
       <footer className="border-t border-slate-800 py-6 px-6 text-center text-xs text-slate-500">
-        SkillGap AI • Phase 6 Complete — Apply Now / Almost Ready / Future Target Tri-Tier Recommendation Engine
+        SkillGap AI • All 10 Phases Complete — End-to-End AI Employment Recommendation System
       </footer>
     </div>
   );

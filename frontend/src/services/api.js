@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 30000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -45,5 +45,23 @@ export const getRecommendationsDashboard = async (candidateId) =>
   (await api.get(`/recommendations/dashboard/${candidateId}`)).data;
 export const refreshRecommendationsDashboard = async (candidateId, jobIds = null) =>
   (await api.post(`/recommendations/dashboard/${candidateId}/refresh`, jobIds ? { job_ids: jobIds } : {})).data;
+
+// Skill Gap & Explainability (Phase 7)
+export const getExplainabilityReport = async (candidateId, jobId) =>
+  (await api.get(`/skillgap/report/${candidateId}/job/${jobId}`)).data;
+export const getCandidateGapSummary = async (candidateId) =>
+  (await api.get(`/skillgap/summary/${candidateId}`)).data;
+
+// Learning Roadmap (Phase 8)
+export const getJobRoadmap = async (candidateId, jobId) =>
+  (await api.get(`/roadmap/job/${candidateId}/${jobId}`)).data;
+export const getGlobalRoadmap = async (candidateId) =>
+  (await api.get(`/roadmap/global/${candidateId}`)).data;
+
+// What-If Simulation (Phase 9)
+export const simulateWhatIf = async (candidateId, jobId, addedSkills) =>
+  (await api.post('/whatif/simulate', { candidate_id: candidateId, job_id: jobId, added_skills: addedSkills })).data;
+export const simulateWhatIfGlobal = async (candidateId, addedSkills) =>
+  (await api.post('/whatif/simulate-global', { candidate_id: candidateId, added_skills: addedSkills })).data;
 
 export default api;

@@ -9,6 +9,9 @@ from app.api.jd import router as jd_router
 from app.api.candidates import router as candidates_router
 from app.api.match import router as match_router
 from app.api.recommendations import router as recommendations_router
+from app.api.skillgap import router as skillgap_router
+from app.api.roadmap import router as roadmap_router
+from app.api.whatif import router as whatif_router
 
 
 @asynccontextmanager
@@ -21,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.6.0",
+    version="1.0.0",
     description="Backend API for AI-Based Skill Gap & Employment Recommendation System",
     lifespan=lifespan
 )
@@ -40,6 +43,9 @@ app.include_router(jd_router, prefix=settings.API_V1_PREFIX)
 app.include_router(candidates_router, prefix=settings.API_V1_PREFIX)
 app.include_router(match_router, prefix=settings.API_V1_PREFIX)
 app.include_router(recommendations_router, prefix=settings.API_V1_PREFIX)
+app.include_router(skillgap_router, prefix=settings.API_V1_PREFIX)
+app.include_router(roadmap_router, prefix=settings.API_V1_PREFIX)
+app.include_router(whatif_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
