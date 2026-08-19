@@ -2,99 +2,48 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 20000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  timeout: 30000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Health & System
-export const checkHealth = async () => {
-  const response = await api.get('/health');
-  return response.data;
-};
-
-export const getSystemInfo = async () => {
-  const response = await api.get('/health/system-info');
-  return response.data;
-};
+export const checkHealth = async () => (await api.get('/health')).data;
+export const getSystemInfo = async () => (await api.get('/health/system-info')).data;
 
 // Jobs & Adzuna Discovery
-export const searchJobs = async (searchParams) => {
-  const response = await api.post('/jobs/search', searchParams);
-  return response.data;
-};
+export const searchJobs = async (params) => (await api.post('/jobs/search', params)).data;
+export const getJobById = async (id) => (await api.get(`/jobs/${id}`)).data;
+export const getCachedStats = async () => (await api.get('/jobs/cached/stats')).data;
 
-export const getJobById = async (jobId) => {
-  const response = await api.get(`/jobs/${jobId}`);
-  return response.data;
-};
+// JD Intelligence
+export const parseJobRequirements = async (id) => (await api.post(`/jd/parse/${id}`)).data;
+export const getJobRequirements = async (id) => (await api.get(`/jd/${id}/requirements`)).data;
+export const getCanonicalSkills = async () => (await api.get('/jd/skills/canonical')).data;
 
-export const getCachedStats = async () => {
-  const response = await api.get('/jobs/cached/stats');
-  return response.data;
-};
-
-// JD Intelligence & Requirement Extraction
-export const parseJobRequirements = async (jobId) => {
-  const response = await api.post(`/jd/parse/${jobId}`);
-  return response.data;
-};
-
-export const getJobRequirements = async (jobId) => {
-  const response = await api.get(`/jd/${jobId}/requirements`);
-  return response.data;
-};
-
-export const getCanonicalSkills = async () => {
-  const response = await api.get('/jd/skills/canonical');
-  return response.data;
-};
-
-// Candidate Intelligence & Resume Parsing
+// Candidate Intelligence
 export const uploadResume = async (file, targetRole = 'Data Scientist') => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('target_role', targetRole);
-
-  const response = await api.post('/candidates/upload-resume', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return response.data;
+  const form = new FormData();
+  form.append('file', file);
+  form.append('target_role', targetRole);
+  return (await api.post('/candidates/upload-resume', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })).data;
 };
+export const loadCandidatePreset = async (presetId) =>
+  (await api.post(`/candidates/load-preset/${presetId}`)).data;
+export const getCandidateProfile = async (id) => (await api.get(`/candidates/${id}`)).data;
+export const getRecentCandidates = async () => (await api.get('/candidates/recent/list')).data;
 
-export const loadCandidatePreset = async (presetId) => {
-  const response = await api.post(`/candidates/load-preset/${presetId}`);
-  return response.data;
-};
+// Semantic Matching
+export const evaluateJobMatch = async (candidateId, jobId) =>
+  (await api.post('/match/evaluate-job', { candidate_id: candidateId, job_id: jobId })).data;
+export const evaluateBatchJobs = async (candidateId, jobIds = null) =>
+  (await api.post('/match/evaluate-all-jobs', { candidate_id: candidateId, job_ids: jobIds })).data;
 
-export const getCandidateProfile = async (candidateId) => {
-  const response = await api.get(`/candidates/${candidateId}`);
-  return response.data;
-};
-
-export const getRecentCandidates = async () => {
-  const response = await api.get('/candidates/recent/list');
-  return response.data;
-};
-
-// Semantic Matching Engine
-export const evaluateJobMatch = async (candidateId, jobId) => {
-  const response = await api.post('/match/evaluate-job', {
-    candidate_id: candidateId,
-    job_id: jobId,
-  });
-  return response.data;
-};
-
-export const evaluateBatchJobs = async (candidateId, jobIds = null) => {
-  const response = await api.post('/match/evaluate-all-jobs', {
-    candidate_id: candidateId,
-    job_ids: jobIds,
-  });
-  return response.data;
-};
+// Tiered Recommendations
+export const getRecommendationsDashboard = async (candidateId) =>
+  (await api.get(`/recommendations/dashboard/${candidateId}`)).data;
+export const refreshRecommendationsDashboard = async (candidateId, jobIds = null) =>
+  (await api.post(`/recommendations/dashboard/${candidateId}/refresh`, jobIds ? { job_ids: jobIds } : {})).data;
 
 export default api;
